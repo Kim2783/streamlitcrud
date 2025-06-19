@@ -53,6 +53,9 @@ dropdown_options = {
 
 st.title("Ammonia Assets CRUD Tool")
 
+if "rerun_flag" not in st.session_state:
+    st.session_state.rerun_flag = False
+
 df = load_data()
 
 st.subheader("Current Data")
@@ -96,7 +99,7 @@ with st.form("add_form"):
             df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
             save_data(df)
             st.success("Entry added successfully.")
-            st.stop()
+            st.session_state.rerun_flag = True
 
 st.subheader("Delete Entry")
 if not df.empty:
@@ -105,7 +108,7 @@ if not df.empty:
         df = df.drop(index=row_to_delete).reset_index(drop=True)
         save_data(df)
         st.success("Entry deleted.")
-        st.stop()
+        st.session_state.rerun_flag = True
 
 st.subheader("Update Entry")
 if not df.empty:
@@ -142,7 +145,7 @@ if not df.empty:
                     df.loc[row_to_update] = updated_entry
                     save_data(df)
                     st.success("Entry updated.")
-                    st.stop()
+                    st.session_state.rerun_flag = True
 
 st.subheader("Filter and Search")
 if not df.empty:
@@ -151,3 +154,9 @@ if not df.empty:
     if st.button("Search"):
         filtered = df[df[search_col].astype(str).str.contains(search_val, case=False, na=False)]
         st.dataframe(filtered)
+
+# Trigger rerun if flag is set
+if st.session_state.rerun_flag:
+    st.session_state.rerun_flag = False
+    st.rerun()
+
