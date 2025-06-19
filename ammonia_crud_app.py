@@ -93,7 +93,7 @@ with st.form("add_form"):
             for err in errors:
                 st.error(err)
         else:
-            df = df.append(new_entry, ignore_index=True)
+            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
             save_data(df)
             st.success("Entry added successfully.")
             st.experimental_rerun()
