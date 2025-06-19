@@ -28,7 +28,7 @@ def validate_input(row):
         errors.append("Invalid date format for start_date or end_date.")
     if not row.get('country_name') or str(row['country_name']).strip() == "":
         errors.append("Country name must not be empty.")
-    if not re.match(r"^[A-Z][a-z]{2}-\\d{4}$", str(row.get('forecast_month_year', ''))):
+    if not re.match(r"^[A-Z][a-z]{2}-\d{4}$", str(row.get('forecast_month_year', ''))):
         errors.append("Forecast month-year must be in format Mon-YYYY (e.g., Jan-2023).")
     return errors
 
