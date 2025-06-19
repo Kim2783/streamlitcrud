@@ -8,7 +8,11 @@ CSV_FILE = "ammonia_assets.csv"
 
 def load_data():
     if os.path.exists(CSV_FILE):
-        return pd.read_csv(CSV_FILE)
+        df = pd.read_csv(CSV_FILE)
+        for date_col in ['start_date', 'end_date']:
+            if date_col in df.columns:
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        return df
     else:
         return pd.DataFrame()
 
@@ -51,112 +55,43 @@ dropdown_options = {
     "country_opec_oecd": ["Non-OECD", "OECD", "OPEC"]
 }
 
-st.title("Ammonia Assets CRUD Tool")
+st.set_page_config(layout="wide")
+st.title("Ammonia Assets - Excel Style Editor with Filters")
 
 if "rerun_flag" not in st.session_state:
     st.session_state.rerun_flag = False
 
 df = load_data()
 
-st.subheader("Current Data")
-if not df.empty:
-    st.dataframe(df)
-else:
-    st.info("No data available.")
+# Sidebar filters
+st.sidebar.header("Filter Data")
+filter_columns = ['market', 'sector', 'product', 'country_name']
+filters = {}
+for col in filter_columns:
+    if col in df.columns:
+        options = sorted(df[col].dropna().unique())
+        selected = st.sidebar.multiselect(f"Filter by {col}", options, default=options)
+        filters[col] = selected
 
-columns = [
-    'market', 'subdivision', 'sector', 'series_type', 'data_source_name',
-    'carbon_intensity', 'product', 'start_date', 'end_date',
-    'uploaded_at_utc_date', 'uploaded_at_utc_time', 'dataset_type_name',
-    'scenario_name', 'frequency', 'metric', 'unit', 'value', 'vintage',
-    'forecast_name', 'forecast_month_year', 'forecast_name_full',
-    'id_country', 'country_name', 'id_region', 'region', 'id_super_region',
-    'super_region', 'country_opec_oecd', 'source_ids', 'source_ids_batch',
-    'transform_utc_time', 'partition_0'
-]
+# Apply filters
+filtered_df = df.copy()
+for col, selected_values in filters.items():
+    filtered_df = filtered_df[filtered_df[col].isin(selected_values)]
 
-st.subheader("Add New Entry")
-with st.form("add_form"):
-    new_entry = {}
-    for col in columns:
-        if col in dropdown_options:
-            new_entry[col] = st.selectbox(col, dropdown_options[col])
-        elif col in ['value']:
-            new_entry[col] = st.number_input(col, value=0.0)
-        elif col in ['subdivision', 'scenario_name', 'id_country', 'id_region', 'id_super_region']:
-            new_entry[col] = st.number_input(col, value=0)
-        elif 'date' in col:
-            new_entry[col] = st.date_input(col)
-        else:
-            new_entry[col] = st.text_input(col)
-    submitted = st.form_submit_button("Add Entry")
-    if submitted:
-        errors = validate_input(new_entry)
-        if errors:
-            for err in errors:
-                st.error(err)
-        else:
-            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
-            save_data(df)
-            st.success("Entry added successfully.")
-            st.session_state.rerun_flag = True
+# Editable data editor
+st.subheader("Editable Table")
+edited_df = st.data_editor(
+    filtered_df,
+    num_rows="dynamic",
+    use_container_width=True
+)
 
-st.subheader("Delete Entry")
-if not df.empty:
-    row_to_delete = st.number_input("Enter row index to delete", min_value=0, max_value=len(df)-1, step=1)
-    if st.button("Delete"):
-        df = df.drop(index=row_to_delete).reset_index(drop=True)
-        save_data(df)
-        st.success("Entry deleted.")
-        st.session_state.rerun_flag = True
-
-st.subheader("Update Entry")
-if not df.empty:
-    row_to_update = st.number_input("Enter row index to update", min_value=0, max_value=len(df)-1, step=1)
-    if st.button("Load Row"):
-        st.session_state['update_row'] = df.loc[row_to_update].to_dict()
-
-    if 'update_row' in st.session_state:
-        with st.form("update_form"):
-            updated_entry = {}
-            for col in columns:
-                default = st.session_state['update_row'].get(col, "")
-                if col in dropdown_options:
-                    updated_entry[col] = st.selectbox(f"{col} (update)", dropdown_options[col], index=dropdown_options[col].index(default) if default in dropdown_options[col] else 0)
-                elif col in ['value']:
-                    updated_entry[col] = st.number_input(f"{col} (update)", value=float(default) if default != "" else 0.0)
-                elif col in ['subdivision', 'scenario_name', 'id_country', 'id_region', 'id_super_region']:
-                    updated_entry[col] = st.number_input(f"{col} (update)", value=int(default) if default != "" else 0)
-                elif 'date' in col:
-                    try:
-                        default_date = pd.to_datetime(default).date()
-                    except:
-                        default_date = datetime.today().date()
-                    updated_entry[col] = st.date_input(f"{col} (update)", value=default_date)
-                else:
-                    updated_entry[col] = st.text_input(f"{col} (update)", value=str(default))
-            update_submit = st.form_submit_button("Update Entry")
-            if update_submit:
-                errors = validate_input(updated_entry)
-                if errors:
-                    for err in errors:
-                        st.error(err)
-                else:
-                    df.loc[row_to_update] = updated_entry
-                    save_data(df)
-                    st.success("Entry updated.")
-                    st.session_state.rerun_flag = True
-
-st.subheader("Filter and Search")
-if not df.empty:
-    search_col = st.selectbox("Select column to search", df.columns)
-    search_val = st.text_input("Enter search value")
-    if st.button("Search"):
-        filtered = df[df[search_col].astype(str).str.contains(search_val, case=False, na=False)]
-        st.dataframe(filtered)
+if st.button("Save Changes"):
+    df.update(edited_df)
+    save_data(df)
+    st.success("Changes saved to ammonia_assets.csv")
 
 # Trigger rerun if flag is set
 if st.session_state.rerun_flag:
     st.session_state.rerun_flag = False
     st.rerun()
-
