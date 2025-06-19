@@ -1,0 +1,82 @@
+{
+  "market": [
+    "Asia",
+    "Europe",
+    "North America"
+  ],
+  "sector": [
+    "Agricultural",
+    "Industrial",
+    "Residential"
+  ],
+  "series_type": [
+    "Forecast",
+    "Historical"
+  ],
+  "carbon_intensity": [
+    "High",
+    "Low",
+    "Medium"
+  ],
+  "product": [
+    "Ammonia",
+    "Nitrate",
+    "Urea"
+  ],
+  "frequency": [
+    "Monthly",
+    "Quarterly",
+    "Yearly"
+  ],
+  "metric": [
+    "Consumption",
+    "Export",
+    "Production"
+  ],
+  "unit": [
+    "kg",
+    "liters"
+  ],
+  "vintage": [
+    2020,
+    2022,
+    2023
+  ],
+  "forecast_name": [
+    "Base",
+    "Optimistic",
+    "Pessimistic"
+  ],
+  "forecast_month_year": [
+    "Feb-2023",
+    "Jan-2023",
+    "Mar-2023"
+  ],
+  "forecast_name_full": [
+    "Base Case 2023",
+    "Optimistic Scenario",
+    "Pessimistic Outlook"
+  ],
+  "country_name": [
+    "Canada",
+    "Germany",
+    "India",
+    "USA"
+  ],
+  "region": [
+    "East",
+    "North",
+    "South",
+    "West"
+  ],
+  "super_region": [
+    "APAC",
+    "Americas",
+    "EMEA"
+  ],
+  "country_opec_oecd": [
+    "Non-OECD",
+    "OECD",
+    "OPEC"
+  ]
+}
