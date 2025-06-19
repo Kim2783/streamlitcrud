@@ -96,7 +96,7 @@ with st.form("add_form"):
             df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
             save_data(df)
             st.success("Entry added successfully.")
-            st.experimental_rerun()
+            st.stop()
 
 st.subheader("Delete Entry")
 if not df.empty:
@@ -105,7 +105,7 @@ if not df.empty:
         df = df.drop(index=row_to_delete).reset_index(drop=True)
         save_data(df)
         st.success("Entry deleted.")
-        st.experimental_rerun()
+        st.stop()
 
 st.subheader("Update Entry")
 if not df.empty:
@@ -142,7 +142,7 @@ if not df.empty:
                     df.loc[row_to_update] = updated_entry
                     save_data(df)
                     st.success("Entry updated.")
-                    st.experimental_rerun()
+                    st.stop()
 
 st.subheader("Filter and Search")
 if not df.empty:
